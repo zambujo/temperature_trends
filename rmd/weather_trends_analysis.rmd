@@ -1,0 +1,54 @@
+---
+title: "Exploring Weather Trends"
+author: "Joao Martins"
+date: "6/2/2020"
+output: pdf_document
+editor_options: 
+  chunk_output_type: console
+---
+
+
+```{r setup, include=FALSE}
+library(reticulate)
+use_condaenv("r-reticulate", required = TRUE)
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+## Introduction
+
+In this project, we want to compare local versus global weather trends.  My current location is Switzerland.  Inspection of the `city_list` table of the SQL database shows that weather data for Switzerland is available for the city of Bern.
+
+```{sql citycheck, eval=FALSE}
+select city
+from city_list
+where country = 'Switzerland'
+```
+
+
+## SQL data download
+
+```{sql download, eval=FALSE}
+select 
+city,
+country,
+city_data.year, 
+city_data.avg_temp as local_average_temperature,
+global_data.avg_temp as global_average_temperature
+from city_data
+full outer join global_data on city_data.year = global_data.year
+where country = 'Switzerland' and city = 'Bern'
+```
+
+## Showing weather trends
+
+### Using Python to read the weather data
+
+```{python loading}
+import numpy as np
+import pandas as pd
+city_data = pd.read_csv("../data/average_temperature_trends.csv")
+# global_data = pd.read_
+city_data.info()
+```
+
