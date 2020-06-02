@@ -52,3 +52,29 @@ city_data = pd.read_csv("../data/average_temperature_trends.csv")
 city_data.info()
 ```
 
+
+
+```{python concepts, eval=FALSE}
+import numpy as np
+import pandas as pd
+
+ma = pd.read_csv("../data/moving-average-exercise.csv")
+ma.info()
+ma.head(n=10)
+
+# both columns have Dtype object 
+ma['Date'] = pd.to_datetime(ma.Date, errors='raise') # convert to date
+ma['Sales'] = ma['Sales'].str.replace(",", "") # replace commas
+ma['Sales'] = pd.to_numeric(ma.Sales, errors='raise') # convert to numeric
+
+ma.info()
+ma.describe()
+
+# rolling mean
+ma['ma_7'] = ma['Sales'].rolling(window=7).mean().round()
+ma['ma_14'] = ma['Sales'].rolling(window=14).mean().round()
+
+ma.head(n=30) # first month
+ma.tail(n=30) # last month
+```
+
