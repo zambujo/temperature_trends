@@ -2,7 +2,8 @@
 title: "Exploring Weather Trends"
 author: "Joao Martins"
 date: "6/2/2020"
-output: pdf_document
+output:
+  tufte::tufte_handout: default
 editor_options: 
   chunk_output_type: console
 ---
@@ -15,9 +16,57 @@ knitr::opts_chunk$set(echo = TRUE)
 ```
 
 
-## Introduction
+# Aim
 
-In this project, we want to compare local versus global weather trends.  My current location is Switzerland.  Inspection of the `city_list` table of the SQL database shows that weather data for Switzerland is available for the city of Bern.
+Visualize and compare local weather trends in Bern, Switzerland, my current location, with global weather trends.  
+
+# Outline
+
+1. SQL to query and download the data from the project website in a CSV format.
+
+2. Python to prepare and visualize the data.
+  - `pandas` to open the CSV file and clean it
+  - `plotnine` to create the line chart with rolling temperature averages
+
+3. R Markdown with the `tufte` package to present the results in a PDF document.
+
+# Observations
+
+```{python prep, include=FALSE}
+import numpy as np
+import pandas as pd
+from plotnine import *
+
+temperature_trends = pd.read_csv("../data/average_temperature_trends.csv")
+# temperature_trends.info() # for inspection
+tt=temperature_trends\
+  .dropna()\
+  .drop(['city', 'country'], axis=1)\
+  .melt(id_vars=['year'],\
+        var_name = 'location',\
+        value_name = 'average_temperature')
+tt['Location'] = tt['location'].str.replace('_average_temperature', '')
+tt['Location'] = tt['Location'].str.replace('global', 'Worldwide')
+tt['Location'] = tt['Location'].str.replace('local', 'Bern, Switzerland')
+```
+
+
+```{python plot, echo=FALSE, message=FALSE}
+ggplot(tt, aes(x='year', y='average_temperature', color='Location')) \
++ geom_point(alpha = .15, size = 1) \
++ geom_smooth(method="mavg", method_args={'window': 10},  se=False) \
++ xlab('Date') \
++ ylab('Average Temperature (Cº)') \
++ theme_minimal() \
++ theme(legend_position=(0.75, 0.25))
+```
+
+
+# Annexes
+
+## SQL data download
+
+Inspection of the `city_list` table of the SQL database shows that weather data for Switzerland is available for the city of Bern.
 
 ```{sql citycheck, eval=FALSE}
 select city
@@ -26,55 +75,47 @@ where country = 'Switzerland'
 ```
 
 
-## SQL data download
-
 ```{sql download, eval=FALSE}
 select 
 city,
 country,
-city_data.year, 
-city_data.avg_temp as local_average_temperature,
+temperature_trends.year, 
+temperature_trends.avg_temp as local_average_temperature,
 global_data.avg_temp as global_average_temperature
-from city_data
-full outer join global_data on city_data.year = global_data.year
+from temperature_trends
+full outer join global_data on temperature_trends.year = global_data.year
 where country = 'Switzerland' and city = 'Bern'
 ```
 
-## Showing weather trends
+## Preparing and visualizing the data with Python
 
-### Using Python to read the weather data
-
-```{python loading}
+```{python src, eval=FALSE}
 import numpy as np
 import pandas as pd
-city_data = pd.read_csv("../data/average_temperature_trends.csv")
-# global_data = pd.read_
-city_data.info()
-```
+from plotnine import *
 
+# open up and inspext the CSV
+temperature_trends = pd.read_csv("../data/average_temperature_trends.csv")
+temperature_trends.info()
 
+# prepare data to plot
+tt=temperature_trends\
+  .dropna()\
+  .drop(['city', 'country'], axis=1)\
+  .melt(id_vars=['year'],\
+        var_name = 'location',\
+        value_name = 'average_temperature')
+tt['Location'] = tt['location'].str.replace('_average_temperature', '')
+tt['Location'] = tt['Location'].str.replace('global', 'Worldwide')
+tt['Location'] = tt['Location'].str.replace('local', 'Bern, Switzerland')
 
-```{python concepts, eval=FALSE}
-import numpy as np
-import pandas as pd
-
-ma = pd.read_csv("../data/moving-average-exercise.csv")
-ma.info()
-ma.head(n=10)
-
-# both columns have Dtype object 
-ma['Date'] = pd.to_datetime(ma.Date, errors='raise') # convert to date
-ma['Sales'] = ma['Sales'].str.replace(",", "") # replace commas
-ma['Sales'] = pd.to_numeric(ma.Sales, errors='raise') # convert to numeric
-
-ma.info()
-ma.describe()
-
-# rolling mean
-ma['ma_7'] = ma['Sales'].rolling(window=7).mean().round()
-ma['ma_14'] = ma['Sales'].rolling(window=14).mean().round()
-
-ma.head(n=30) # first month
-ma.tail(n=30) # last month
+# line charts with moving averages
+ggplot(tt, aes(x='year', y='average_temperature', color='Location')) \
++ geom_point(alpha = .15, size = 1) \
++ geom_smooth(method="mavg", method_args={'window': 10},  se=False) \
++ xlab('Date') \
++ ylab('Average Temperature (Cº)') \
++ theme_minimal() \
++ theme(legend_position=(0.75, 0.25))
 ```
 
