@@ -16,29 +16,25 @@ knitr::opts_chunk$set(echo = TRUE)
 ```
 
 
-# Aim
-
-Visualize and compare local weather trends in Bern, Switzerland, my current location, with global weather trends.  
-
 # Outline
 
-1. SQL to query and download the data from the project website in a CSV format.
+Below, we explore weather trends.  We compare local and global trends.  In particular, we compare average temperature records in Bern, Switzerland, against the world's average temperature^[measured in Celcius] between 1750 and 2013.  We take the following steps:
 
-2. Python to prepare and visualize the data.
-  - `pandas` to open the CSV file and clean it
-  - `plotnine` to create the line chart with rolling temperature averages
+1. query a database embedded in the udacity project website using SQL (see query in the annex);
 
-3. R Markdown with the `tufte` package to present the results in a PDF document.
+2. load, prepare, and visualize the trends using Python (see script in the annex):  
+  2.1. [`pandas`](https://github.com/pandas-dev/pandas) opens and cleans the CSV table;  
+  2.2. [`plotnine`](https://github.com/has2k1/plotnine) produces a line chart with moving temperature averages^[while using `pandas.rolling()` function to calculate the moving average];
+
+3. display the results in a PDF document thanks to [R Markdown](https://rmarkdown.rstudio.com) and the [`tufte` package](https://github.com/rstudio/tufte).
+
 
 # Observations
 
 ```{python prep, include=FALSE}
-import numpy as np
 import pandas as pd
 from plotnine import *
-
 temperature_trends = pd.read_csv("../data/average_temperature_trends.csv")
-# temperature_trends.info() # for inspection
 tt=temperature_trends\
   .dropna()\
   .drop(['city', 'country'], axis=1)\
@@ -46,13 +42,9 @@ tt=temperature_trends\
         var_name = 'location',\
         value_name = 'average_temperature')
 tt['Location'] = tt['location'].str.replace('_average_temperature', '')
-tt['Location'] = tt['Location'].str.replace('global', 'Worldwide')
+tt['Location'] = tt['Location'].str.replace('global', 'World')
 tt['Location'] = tt['Location'].str.replace('local', 'Bern, Switzerland')
-```
-
-
-```{python plot, echo=FALSE, message=FALSE}
-ggplot(tt, aes(x='year', y='average_temperature', color='Location')) \
+p=ggplot(tt, aes(x='year', y='average_temperature', color='Location')) \
 + geom_point(alpha = .15, size = 1) \
 + geom_smooth(method="mavg", method_args={'window': 10},  se=False) \
 + xlab('Date') \
@@ -62,54 +54,66 @@ ggplot(tt, aes(x='year', y='average_temperature', color='Location')) \
 ```
 
 
-# Annexes
+```{python plot, echo=FALSE, results='hide', fig.keep='all', fig.cap='Average temperatures(ºC) between 1750 and 2013.  Each dot represents the average temperature over 1 year. Lines show a moving average temperature over a time period of 10 years.  Bern temperatures are shown in red, world temperatures in blue.'}
+p
+```
 
-## SQL data download
+Figure 1 shows that Bern average temperatures are consistently lower than world average.
 
-Inspection of the `city_list` table of the SQL database shows that weather data for Switzerland is available for the city of Bern.
+\newpage
 
-```{sql citycheck, eval=FALSE}
+# Source code
+
+## SQL
+
+```{sql download, eval=FALSE}
+-- check cities in Switzerland
 select city
 from city_list
 where country = 'Switzerland'
-```
-
-
-```{sql download, eval=FALSE}
-select 
-city,
-country,
-temperature_trends.year, 
-temperature_trends.avg_temp as local_average_temperature,
-global_data.avg_temp as global_average_temperature
+-- download local (Bern) and global average temperatures
+select city
+     , country
+     , temperature_trends.year
+     , temperature_trends.avg_temp as local_average_temperature
+     , global_data.avg_temp as global_average_temperature
 from temperature_trends
 full outer join global_data on temperature_trends.year = global_data.year
 where country = 'Switzerland' and city = 'Bern'
 ```
 
-## Preparing and visualizing the data with Python
+--- 
+
+## Python
 
 ```{python src, eval=FALSE}
-import numpy as np
 import pandas as pd
 from plotnine import *
 
-# open up and inspext the CSV
+# ------- open/inspect CSV file in ../data folder
+
 temperature_trends = pd.read_csv("../data/average_temperature_trends.csv")
 temperature_trends.info()
 
-# prepare data to plot
+# ------- data preparation
+
 tt=temperature_trends\
   .dropna()\
-  .drop(['city', 'country'], axis=1)\
+  .drop(['city', 'country'], axis=1)
+assert(tt.year.duplicated().sum() == 0, "TODO: remove duplicates")
+
+# normal form
+tt=tt\
   .melt(id_vars=['year'],\
         var_name = 'location',\
         value_name = 'average_temperature')
+# recode values
 tt['Location'] = tt['location'].str.replace('_average_temperature', '')
-tt['Location'] = tt['Location'].str.replace('global', 'Worldwide')
+tt['Location'] = tt['Location'].str.replace('global', 'World')
 tt['Location'] = tt['Location'].str.replace('local', 'Bern, Switzerland')
 
-# line charts with moving averages
+# ------- line charts with moving averages
+
 ggplot(tt, aes(x='year', y='average_temperature', color='Location')) \
 + geom_point(alpha = .15, size = 1) \
 + geom_smooth(method="mavg", method_args={'window': 10},  se=False) \
@@ -118,4 +122,3 @@ ggplot(tt, aes(x='year', y='average_temperature', color='Location')) \
 + theme_minimal() \
 + theme(legend_position=(0.75, 0.25))
 ```
-
