@@ -15,21 +15,17 @@ use_condaenv("r-reticulate", required = TRUE)
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-
 # Outline
 
-Below, we explore weather trends.  We compare local and global trends.  In particular, we compare average temperature records in Bern, Switzerland, against the world's average temperature^[measured in Celcius] between 1750 and 2013.  We take the following steps:
+Below we explore weather trends.  We compare local and global trends.  In particular, we compare annual average temperature records for Bern, Switzerland, against corresponding world annual average temperature records between 1750 and 2013.  We take the following steps:
 
-1. query a database embedded in the udacity project website using SQL (see query in the annex);
+1. Query a database embedded in the udacity project website using SQL (cf. query in annex);
 
-2. load, prepare, and visualize the trends using Python (see script in the annex):  
-  2.1. [`pandas`](https://github.com/pandas-dev/pandas) opens and cleans the CSV table;  
-  2.2. [`plotnine`](https://github.com/has2k1/plotnine) produces a line chart with moving temperature averages^[while using `pandas.rolling()` function to calculate the moving average];
+2. Load, prepare, and visualize the trends using Python (cf. script in annex):  
+  2.1. Open, clean the CSV table with [`pandas`](https://github.com/pandas-dev/pandas);  
+  2.2. Plot a line chart showing a moving average of the temperatures with [`plotnine`](https://github.com/has2k1/plotnine)^[`plotnine` is based on `Matplotlib` and implements `ggplot2`'s grammar of graphics, well-suited for exploratory analyses.]. `plotnine`'s [moving average smoothing method](https://plotnine.readthedocs.io/en/stable/generated/plotnine.stats.stat_smooth.html) is based on the `pandas.rolling()` function.
 
-3. display the results in a PDF document thanks to [R Markdown](https://rmarkdown.rstudio.com) and the [`tufte` package](https://github.com/rstudio/tufte).
-
-
-# Observations
+3. Display the results in a PDF document thanks to [R Markdown](https://rmarkdown.rstudio.com), \LaTeX, and the [`tufte` package](https://github.com/rstudio/tufte).
 
 ```{python prep, include=FALSE}
 import pandas as pd
@@ -44,25 +40,35 @@ tt=temperature_trends\
 tt['Location'] = tt['location'].str.replace('_average_temperature', '')
 tt['Location'] = tt['Location'].str.replace('global', 'World')
 tt['Location'] = tt['Location'].str.replace('local', 'Bern, Switzerland')
-p=ggplot(tt, aes(x='year', y='average_temperature', color='Location')) \
-+ geom_point(alpha = .15, size = 1) \
-+ geom_smooth(method="mavg", method_args={'window': 10},  se=False) \
-+ xlab('Date') \
-+ ylab('Average Temperature (Cº)') \
+p=ggplot(tt, aes(x='year', y = 'average_temperature', color = 'Location')) \
++ geom_point(alpha = .4, size = 2) \
++ geom_smooth(method = "mavg", method_args={'window': 10},  se=False) \
++ labs(x = 'Date', y = 'Average Temperature') \
 + theme_minimal() \
-+ theme(legend_position=(0.75, 0.25))
++ theme(legend_position = (0.75, 0.25))
 ```
 
+# Observations
 
-```{python plot, echo=FALSE, results='hide', fig.keep='all', fig.cap='Average temperatures(ºC) between 1750 and 2013.  Each dot represents the average temperature over 1 year. Lines show a moving average temperature over a time period of 10 years.  Bern temperatures are shown in red, world temperatures in blue.'}
+```{python mainfigure, echo=FALSE, results='hide', fig.keep='all', fig.cap='Average temperatures (ºC) between 1750 and 2013.  Each dot represents the average temperature over 1 year. Lines show a moving average temperature over a time period of 10 years.  Bern temperatures are shown in red, world temperatures in blue.'}
 p
 ```
 
-Figure 1 shows that Bern average temperatures are consistently lower than world average.
+Figure 1 shows a number of interesting observations:
+
+1. Over the past 250 years, Bern average temperatures have been consistently lower than world average by about 1.5ºC.
+
+2. Year-over-year temperatures tend to oscillate more locally.  The ruggedness of the moving average and the level of dispersion of the data points seems higher for Bern.  In other words, world average temperatures are typically more consistent from a year to the next.  They do not account for local fluctuations.
+
+3. Early records for Bern show an extremely low temperature, below 3ºC, in 1752.  Worldwide, 1752 was also the coldest year on record.
+
+4. The 20th century appears to show both local and global warming temperature trends.
+
+5. Global temperature records over the 18th and 19th centuries appear to be more disperse than over the 20th century.  This observation does not seem to apply to local temperature records.
 
 \newpage
 
-# Source code
+# Annex
 
 ## SQL
 
@@ -82,7 +88,7 @@ full outer join global_data on temperature_trends.year = global_data.year
 where country = 'Switzerland' and city = 'Bern'
 ```
 
---- 
+
 
 ## Python
 
@@ -97,16 +103,27 @@ temperature_trends.info()
 
 # ------- data preparation
 
-tt=temperature_trends\
-  .dropna()\
-  .drop(['city', 'country'], axis=1)
+tt = temperature_trends\
+    .dropna()\
+    .drop(['city', 'country'], axis=1)
 assert(tt.year.duplicated().sum() == 0, "TODO: remove duplicates")
 
+# ------- correlation coefficients ()
+
+pearson = tt.local_average_temperature.corr(tt.global_average_temperature)
+spearman = tt.local_average_temperature.corr(tt.global_average_temperature,\
+                                             method = 'spearman')
+kendall = tt.local_average_temperature.corr(tt.global_average_temperature,\
+                                            method = 'kendall')
+print(pearson.round(2)) # 0.56
+print(spearman.round(2)) # 0.49
+print(kendall.round(2)) # 0.35
+
 # normal form
-tt=tt\
-  .melt(id_vars=['year'],\
-        var_name = 'location',\
-        value_name = 'average_temperature')
+tt = tt\
+    .melt(id_vars=['year'],\
+          var_name = 'location',\
+          value_name = 'average_temperature')
 # recode values
 tt['Location'] = tt['location'].str.replace('_average_temperature', '')
 tt['Location'] = tt['Location'].str.replace('global', 'World')
@@ -114,11 +131,10 @@ tt['Location'] = tt['Location'].str.replace('local', 'Bern, Switzerland')
 
 # ------- line charts with moving averages
 
-ggplot(tt, aes(x='year', y='average_temperature', color='Location')) \
-+ geom_point(alpha = .15, size = 1) \
-+ geom_smooth(method="mavg", method_args={'window': 10},  se=False) \
-+ xlab('Date') \
-+ ylab('Average Temperature (Cº)') \
+ggplot(tt, aes(x = 'year', y = 'average_temperature', color = 'Location')) \
++ geom_point(alpha = .4, size = 2) \
++ geom_smooth(method = "mavg", method_args = {'window': 10},  se = False) \
++ labs(x = 'Date', y = 'Average Temperature') \
 + theme_minimal() \
-+ theme(legend_position=(0.75, 0.25))
++ theme(legend_position = (0.75, 0.25))
 ```
