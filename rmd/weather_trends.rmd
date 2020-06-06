@@ -1,0 +1,194 @@
+---
+title: "Exploring Weather Trends"
+author: "Joao Martins"
+date: "6/2/2020"
+output:
+  tufte::tufte_html: default
+editor_options: 
+  chunk_output_type: console
+---
+
+
+```{r setup, include=FALSE}
+library(reticulate)
+use_condaenv("r-reticulate", required = TRUE)
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+# Outline
+
+Below we explore weather trends.  We compare annual average temperature records from Portugal against corresponding world annual average temperature records between 1750 and 2013.  We take the following steps:
+
+1. Download regional and global temperature trends from [http://berkeleyearth.lbl.gov/](http://berkeleyearth.lbl.gov) using the command line (cf. Bash script in annex);
+
+2. Load, prepare, and visualize the trends using Python (cf. Python script in annex):  
+  2.1. Open, clean the CSV table with [`pandas`](https://github.com/pandas-dev/pandas);  
+  2.2. Plot a line chart showing a moving average of the temperatures with [`plotnine`](https://github.com/has2k1/plotnine)^[`plotnine` is based on `Matplotlib` and implements `ggplot2`'s grammar of graphics, well-suited for exploratory analyses.]. `plotnine`'s [moving average smoothing method](https://plotnine.readthedocs.io/en/stable/generated/plotnine.stats.stat_smooth.html) is based on the `pandas.rolling()` function.
+
+3. Display the results in [R Markdown](https://rmarkdown.rstudio.com), \LaTeX, using the [`tufte`](https://github.com/rstudio/tufte) layout.
+
+```{python prep, include=FALSE}
+import numpy as np
+import pandas as pd
+from plotnine import *
+
+base_local=pd.read_csv("../data/portugal_monthly_avg.csv",\
+                       header=None,\
+                       names=['baseline'])
+base_world=pd.read_csv("../data/world_monthly_avg.csv",\
+                        header=None,\
+                        names=['baseline'])
+base_local['month']=range(1, 13)
+base_world['month']=range(1, 13)
+
+local=pd.read_csv("../data/portugal_monthly_anom.csv", \
+                  header=None, \
+                  names=['year', 'month', 'anomaly'])
+local=pd.merge(local, base_local, on='month', how='left')
+local['temp']=local.baseline + local.anomaly
+local['count']=local.groupby('year')['year'].transform('count')
+local=local.query('count == 12')
+local=local.groupby('year').mean()[['temp']]
+local['year']=local.index
+local['location']=np.repeat("Portugal", len(local))
+
+world=pd.read_csv("../data/world_monthly_anom.csv", \
+                  header=None, \
+                  names=['year', 'month', 'anomaly'])
+world=pd.merge(world, base_world, on='month', how='left')
+world['temp']=world.baseline + world.anomaly
+world['count']=world.groupby('year')['year'].transform('count')
+world=world.query('count == 12')
+world=world.groupby('year').mean()[['temp']]
+world['year']=world.index
+world['location']=np.repeat("World", len(world))
+
+tt=pd.concat([local, world], ignore_index=True)
+tt=tt.dropna()
+
+p=ggplot(tt, aes(x='year', y = 'temp', color = 'location')) \
++ geom_point(alpha = .4, size = 2) \
++ geom_smooth(method = "mavg", method_args={'window': 10},  se=False) \
++ labs(x = 'Year', y = 'Average Temperature (Celcius)') \
++ theme_minimal() \
++ theme(legend_position = (0.75, 0.25))
+
+```
+
+# Observations
+
+```{python mainfigure, echo=FALSE, results='hide', fig.keep='all', fig.cap='Average temperatures (ºC) between 1750 and 2013.  Each dot represents the average temperature over 1 year. Lines show a moving average temperature over a time period of 10 years.  Temperatures in Portugal are shown in red, world temperatures in blue.'}
+p
+```
+
+Figure 1 shows a number of interesting observations:
+
+1. Over the past 250 years, average temperatures in Portugal have been consistently lower than world average by about 7ºC.
+
+2. Year-over-year temperatures appear to oscillate more in the regional level.  The ruggedness of the moving average and the level of dispersion of the data points seems higher for Portugal.  In other words, world average temperatures are typically more consistent from a year to the next.  One could argue that they do not account for regional fluctuations.
+
+3. Though global temperature records over the 18th century and the first half of the 19th century appear to be more disperse, the 20th century appears to show both regional and global warming temperature trends.
+
+\newpage
+
+# Annex
+
+## Bash
+
+```{bash download, eval=FALSE}
+#!/bin/bash
+echo 'parsing monthly average temperatures for Portugal...';
+curl -s http://berkeleyearth.lbl.gov/auto/Regional/TAVG/Text/portugal-TAVG-Trend.txt \
+  | egrep "^% Estimated Jan(.*)+monthly" -A 2 \
+  | tail -n 1 | tr -d "%" | tr -s '[:blank:]' \
+  | cut -c 2- \
+  | tr ' ' '\n' \
+  > portugal_monthly_avg.csv;
+echo 'parsing monthly historic temperature anomalies for Portugal...';
+curl -s http://berkeleyearth.lbl.gov/auto/Regional/TAVG/Text/portugal-TAVG-Trend.txt \
+  | egrep -v "^%|^( )?$" \
+  | tr -s '[:blank:]' \
+  | cut -c 2- \
+  | cut -d ' ' -f 1,2,3 \
+  | tr ' ' ',' \
+  > portugal_monthly_anom.csv;
+echo 'parsing monthly average temperatures worldwide...';
+curl -s http://berkeleyearth.lbl.gov/auto/Regional/TAVG/Text/global-land-TAVG-Trend.txt \
+  | egrep "^% Estimated Jan(.*)+monthly" -A 2 \
+  | tail -n 1 | tr -d "%" | tr -s '[:blank:]' \
+  | cut -c 2- \
+  | tr ' ' '\n' \
+  > world_monthly_avg.csv;
+echo 'parsing monthly historic temperature anomalies worldwide...';
+curl -s http://berkeleyearth.lbl.gov/auto/Regional/TAVG/Text/global-land-TAVG-Trend.txt \
+  | egrep -v "^%|^( )?$" \
+  | tr -s '[:blank:]' \
+  | cut -c 2- \
+  | cut -d ' ' -f 1,2,3 \
+  | tr ' ' ',' \
+  > world_monthly_anom.csv;
+```
+
+
+## Python
+
+```{python src, eval=FALSE}
+import numpy as np
+import pandas as pd
+from plotnine import *
+
+# load data files 
+base_local=pd.read_csv("../data/portugal_monthly_avg.csv",\
+                       header=None,\
+                       names=['baseline'])
+local=pd.read_csv("../data/portugal_monthly_anom.csv", \
+                  header=None, \
+                  names=['year', 'month', 'anomaly'])
+base_world=pd.read_csv("../data/world_monthly_avg.csv",\
+                        header=None,\
+                        names=['baseline'])
+world=pd.read_csv("../data/world_monthly_anom.csv", \
+                  header=None, \
+                  names=['year', 'month', 'anomaly'])
+
+base_local['month']=range(1, 13)
+base_world['month']=range(1, 13)
+
+# --- calculate temperatures from baselines and anomalies
+
+local=pd.merge(local, base_local, on='month', how='left')
+local['temp']=local.baseline + local.anomaly
+local['count']=local.groupby('year')['year'].transform('count')
+local=local.query('count == 12')
+local=local.groupby('year').mean()[['temp']]
+local['year']=local.index
+local['location']=np.repeat("Portugal", len(local))
+assert(local.year.duplicated().sum() == 0, \
+       "TODO: remove duplicates from local dataframe")
+
+world=pd.merge(world, base_world, on='month', how='left')
+world['temp']=world.baseline + world.anomaly
+world['count']=world.groupby('year')['year'].transform('count')
+world=world.query('count == 12')
+world=world.groupby('year').mean()[['temp']]
+world['year']=world.index
+world['location']=np.repeat("World", len(world))
+assert(world.year.duplicated().sum() == 0, \
+       "TODO: remove duplicates from world data frame")
+
+# --- combine data frames
+
+tt=pd.concat([local, world], ignore_index=True)
+tt=tt.dropna()
+
+# ------- line charts with moving averages
+
+p=ggplot(tt, aes(x='year', y = 'temp', color = 'location')) \
++ geom_point(alpha = .4, size = 2) \
++ geom_smooth(method = "mavg", method_args={'window': 10},  se=False) \
++ labs(x = 'Year', y = 'Average Temperature (Celcius)') \
++ theme_minimal() \
++ theme(legend_position = (0.75, 0.25))
+
+```

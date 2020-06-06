@@ -2,13 +2,9 @@
 
 ## Outline
 
-Comparing local and global temperature trends using pandas.
+Comparing regional and global temperature trends embedding Python on R Markdown.
 
 ## Data
 
-http://berkeleyearth.org/data/
-
-http://berkeleyearth.lbl.gov/regions/portugal
-
-http://berkeleyearth.lbl.gov/regions/switzerland
+[Berkeley Earth](http://berkeleyearth.org/data): [Wikipedia article](https://en.wikipedia.org/wiki/Berkeley_Earth).
 
