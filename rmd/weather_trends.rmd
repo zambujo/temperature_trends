@@ -4,6 +4,7 @@ author: "Joao Martins"
 date: "6/2/2020"
 output:
   tufte::tufte_html: default
+  self_contained: false
 editor_options: 
   chunk_output_type: console
 ---
@@ -70,7 +71,7 @@ tt=tt.dropna()
 p=ggplot(tt, aes(x='year', y = 'temp', color = 'location')) \
 + geom_point(alpha = .4, size = 2) \
 + geom_smooth(method = "mavg", method_args={'window': 10},  se=False) \
-+ labs(x = 'Year', y = 'Average Temperature (Celcius)') \
++ labs(x = 'Year', y = 'Average Temperature') \
 + theme_minimal() \
 + theme(legend_position = (0.75, 0.25))
 
@@ -187,7 +188,7 @@ tt=tt.dropna()
 p=ggplot(tt, aes(x='year', y = 'temp', color = 'location')) \
 + geom_point(alpha = .4, size = 2) \
 + geom_smooth(method = "mavg", method_args={'window': 10},  se=False) \
-+ labs(x = 'Year', y = 'Average Temperature (Celcius)') \
++ labs(x = 'Year', y = 'Average Temperature') \
 + theme_minimal() \
 + theme(legend_position = (0.75, 0.25))
 

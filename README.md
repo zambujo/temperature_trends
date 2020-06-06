@@ -2,7 +2,7 @@
 
 ## Outline
 
-Comparing regional and global temperature trends embedding Python on R Markdown.
+Comparing regional and global temperature trends embedding Python on R Markdown.  Trying [`plotnine`](https://github.com/has2k1/plotnine) and [`reticulate`](https://github.com/rstudio/reticulate).
 
 ## Data
 
