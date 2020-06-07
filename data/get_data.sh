@@ -29,5 +29,3 @@ curl -s http://berkeleyearth.lbl.gov/auto/Regional/TAVG/Text/global-land-TAVG-Tr
   | cut -d ' ' -f 1,2,3 \
   | tr ' ' ',' \
   > world_monthly_anom.csv;
-
-  

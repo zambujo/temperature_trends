@@ -268,24 +268,23 @@ if (window.hljs) {
 
 <h1 class="title toc-ignore">Exploring Weather Trends</h1>
 <h4 class="author">Joao Martins</h4>
-<h4 class="date">6/2/2020</h4>
 
 
 
 <div id="outline" class="section level1">
 <h1>Outline</h1>
-<p>Below we explore weather trends. We compare annual average temperature records from Portugal against corresponding world annual average temperature records between 1750 and 2013. We take the following steps:</p>
+<p>To compare annual average temperature records from Portugal against corresponding world annual average temperature records between 1750 and 2013, we take the following steps:</p>
 <ol style="list-style-type: decimal">
-<li><p>Download regional and global temperature trends from <a href="http://berkeleyearth.lbl.gov">http://berkeleyearth.lbl.gov/</a> using the command line (cf. Bash script in annex);</p></li>
-<li><p>Load, prepare, and visualize the trends using Python (cf. Python script in annex):<br />
+<li><p>Download regional and global temperature trends from <a href="http://berkeleyearth.lbl.gov">http://berkeleyearth.lbl.gov/</a> using the command line (see <code>Bash</code> script in annex);</p></li>
+<li><p>Load, prepare, and visualize the trends using <code>Python</code> (see script in annex):<br />
 2.1. Open, clean the CSV table with <a href="https://github.com/pandas-dev/pandas"><code>pandas</code></a>;<br />
-2.2. Plot a line chart showing a moving average of the temperatures with <a href="https://github.com/has2k1/plotnine"><code>plotnine</code></a><label for="tufte-sn-1" class="margin-toggle sidenote-number">1</label><input type="checkbox" id="tufte-sn-1" class="margin-toggle"><span class="sidenote"><span class="sidenote-number">1</span> <code>plotnine</code> is based on <code>Matplotlib</code> and implements <code>ggplot2</code>’s grammar of graphics, well-suited for exploratory analyses.</span>. <code>plotnine</code>’s <a href="https://plotnine.readthedocs.io/en/stable/generated/plotnine.stats.stat_smooth.html">moving average smoothing method</a> is based on the <code>pandas.rolling()</code> function.</p></li>
-<li><p>Display the results in <a href="https://rmarkdown.rstudio.com">R Markdown</a>, , using the <a href="https://github.com/rstudio/tufte"><code>tufte</code></a> layout.</p></li>
+2.2. Produce a line chart showing a moving average of the temperatures with <a href="https://github.com/has2k1/plotnine"><code>plotnine</code></a><label for="tufte-sn-1" class="margin-toggle sidenote-number">1</label><input type="checkbox" id="tufte-sn-1" class="margin-toggle"><span class="sidenote"><span class="sidenote-number">1</span> <code>plotnine</code> is based on <code>Matplotlib</code> and implements <code>ggplot2</code>’s grammar of graphics, well-suited for exploratory analyses.</span>. <code>plotnine</code>’s <a href="https://plotnine.readthedocs.io/en/stable/generated/plotnine.stats.stat_smooth.html">moving average smoothing method</a> is based on the <code>pandas.rolling()</code> function.</p></li>
+<li><p>Display the results in <a href="https://rmarkdown.rstudio.com">R Markdown</a>, following the <a href="https://github.com/rstudio/tufte"><code>tufte</code></a> layout.</p></li>
 </ol>
 </div>
 <div id="observations" class="section level1">
 <h1>Observations</h1>
-<div class="figure">
+<div class="figure" style="text-align: center">
 <p class="caption marginnote shownote">
 Average temperatures (ºC) between 1750 and 2013. Each dot represents the average temperature over 1 year. Lines show a moving average temperature over a time period of 10 years. Temperatures in Portugal are shown in red, world temperatures in blue.
 </p>
@@ -293,11 +292,10 @@ Average temperatures (ºC) between 1750 and 2013. Each dot represents the averag
 </div>
 <p>Figure 1 shows a number of interesting observations:</p>
 <ol style="list-style-type: decimal">
-<li><p>Over the past 250 years, average temperatures in Portugal have been consistently lower than world average by about 7ºC.</p></li>
-<li><p>Year-over-year temperatures appear to oscillate more in the regional level. The ruggedness of the moving average and the level of dispersion of the data points seems higher for Portugal. In other words, world average temperatures are typically more consistent from a year to the next. One could argue that they do not account for regional fluctuations.</p></li>
-<li><p>Though global temperature records over the 18th century and the first half of the 19th century appear to be more disperse, the 20th century appears to show both regional and global warming temperature trends.</p></li>
+<li><p>Over the past 250 years, Portugal has been consistently warmer than the rest of the world by about 7ºC.</p></li>
+<li><p>Year-over-year temperatures appear to oscillate more at a regional level. The ruggedness of the moving average and the level of dispersion of the data points seems higher for Portugal. By contrast, world average temperatures appear to typically more consistent from a year to the next. Possibly, they do not suffer from regional fluctuations.</p></li>
+<li><p>The 20th century appears to show a regional and global warming trend.</p></li>
 </ol>
-<div style="page-break-after: always;"></div>
 </div>
 <div id="annex" class="section level1">
 <h1>Annex</h1>
@@ -367,8 +365,8 @@ local=local.query(&#39;count == 12&#39;)
 local=local.groupby(&#39;year&#39;).mean()[[&#39;temp&#39;]]
 local[&#39;year&#39;]=local.index
 local[&#39;location&#39;]=np.repeat(&quot;Portugal&quot;, len(local))
-assert(local.year.duplicated().sum() == 0, \
-       &quot;TODO: remove duplicates from local dataframe&quot;)
+assert local.year.duplicated().sum() == 0, \
+       &quot;TODO: remove duplicates from local dataframe&quot;
 
 world=pd.merge(world, base_world, on=&#39;month&#39;, how=&#39;left&#39;)
 world[&#39;temp&#39;]=world.baseline + world.anomaly
@@ -377,8 +375,8 @@ world=world.query(&#39;count == 12&#39;)
 world=world.groupby(&#39;year&#39;).mean()[[&#39;temp&#39;]]
 world[&#39;year&#39;]=world.index
 world[&#39;location&#39;]=np.repeat(&quot;World&quot;, len(world))
-assert(world.year.duplicated().sum() == 0, \
-       &quot;TODO: remove duplicates from world data frame&quot;)
+assert world.year.duplicated().sum() == 0, \
+       &quot;TODO: remove duplicates from world data frame&quot;
 
 # --- combine data frames
 
