@@ -1,8 +1,8 @@
-# Weather Trends
+# Exploring Weather Data with Bash and Python (and R)
 
 ## Outline
 
-Comparing regional and global temperature trends embedding Python on R Markdown.  Trying [`plotnine`](https://github.com/has2k1/plotnine) and [`reticulate`](https://github.com/rstudio/reticulate).
+Comparing regional and global temperature trends embedding Python on R Markdown.  Using [`plotnine`](https://github.com/has2k1/plotnine) and [`reticulate`](https://github.com/rstudio/reticulate).
 
 ## Data
 

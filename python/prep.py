@@ -3,54 +3,52 @@ import pandas as pd
 from plotnine import *
 
 # load data files 
-base_local=pd.read_csv("../data/portugal_monthly_avg.csv",\
-                       header=None,\
-                       names=['baseline'])
-local=pd.read_csv("../data/portugal_monthly_anom.csv", \
-                  header=None, \
-                  names=['year', 'month', 'anomaly'])
-base_world=pd.read_csv("../data/world_monthly_avg.csv",\
-                        header=None,\
-                        names=['baseline'])
-world=pd.read_csv("../data/world_monthly_anom.csv", \
-                  header=None, \
-                  names=['year', 'month', 'anomaly'])
+reference_pt = pd.read_csv("../data/portugal_monthly_avg.csv", \
+                           header = None, \
+                           names = ['reference'])
+temperature_pt = pd.read_csv("../data/portugal_monthly_anom.csv", \
+                             header = None, \
+                             names = ['year', 'month', 'delta'])
+reference_world = pd.read_csv("../data/world_monthly_avg.csv", \
+                              header = None, \
+                              names = ['reference'])
+temperature_world = pd.read_csv("../data/world_monthly_anom.csv", \
+                  header = None, \
+                  names = ['year', 'month', 'delta'])
 
-base_local['month']=range(1, 13)
-base_world['month']=range(1, 13)
+reference_pt['month'] = range(1, 13)
+reference_world['month'] = range(1, 13)
 
-# --- calculate temperatures from baselines and anomalies
+# --- calculate temperatures from reference and delta temperature files
 
-local=pd.merge(local, base_local, on='month', how='left')
-local['temp']=local.baseline + local.anomaly
-local['count']=local.groupby('year')['year'].transform('count')
-local=local.query('count == 12')
-local=local.groupby('year').mean()[['temp']]
-local['year']=local.index
-local['location']=np.repeat("Portugal", len(local))
-assert local.year.duplicated().sum() == 0, \
-       "TODO: remove duplicates from local dataframe"
+def calculate_temperatures(ref_temp, delta_temp, loc):
+        assert 'delta' in delta_temp.columns, 'delta_temp lacks a delta column'
+        assert 'reference' in ref_temp.columns, 'ref_temp lacks a reference column'
+        temp = ref_temp.merge(delta_temp, on = 'month')
+        temp['absolute'] = temp.reference + temp.delta
+        # remove years with missing measurements
+        temp['count'] = temp.groupby('year')['year'].transform('count')
+        temp = temp.query('count == 12')
+        # average annual temperature
+        temp = temp.groupby('year').mean()[['absolute']]
+        temp['year'] = temp.index
+        assert temp.year.duplicated().sum() == 0, "remove duplicate years"
+        temp['location'] = np.repeat(loc, len(temp))
+        return temp
 
-world=pd.merge(world, base_world, on='month', how='left')
-world['temp']=world.baseline + world.anomaly
-world['count']=world.groupby('year')['year'].transform('count')
-world=world.query('count == 12')
-world=world.groupby('year').mean()[['temp']]
-world['year']=world.index
-world['location']=np.repeat("World", len(world))
-assert world.year.duplicated().sum() == 0, \
-       "TODO: remove duplicates from world data frame"
+temperature_pt = calculate_temperatures(reference_pt, temperature_pt, "Portugal")
+temperature_world = calculate_temperatures(reference_world, temperature_world, "World")
 
 # --- combine data frames
 
-tt=pd.concat([local, world], ignore_index=True)
-tt=tt.dropna()
+temperatures = pd.concat([temperature_pt, temperature_world], ignore_index = True)
+temperatures = temperatures.dropna()
 
 # ------- line charts with moving averages
 
-p=ggplot(tt, aes(x='year', y = 'temp', color = 'location')) \
-+ geom_point(alpha = .4, size = 2) \
-+ geom_smooth(method = "mavg", method_args={'window': 10},  se=False) \
-+ labs(x = 'Year', y = 'Average Temperature') \
-+ theme_minimal() \
-+ theme(legend_position = (0.75, 0.25))
+p = ggplot(temperatures, aes(x = 'year', y = 'absolute', color = 'location')) \
+  + geom_point(alpha = .4, size = 2) \
+  + geom_smooth(method = "mavg", method_args = {'window': 10},  se = False) \
+  + labs(x = 'Year', y = 'Average Temperature') \
+  + theme_minimal() \
+  + theme(legend_position = (0.75, 0.25))

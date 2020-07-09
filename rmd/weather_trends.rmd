@@ -1,5 +1,5 @@
 ---
-title: "Exploring Weather Trends"
+title: "Exploring Weather Data"
 author: "Joao Martins"
 output:
   tufte::tufte_html: default
@@ -12,9 +12,9 @@ use_condaenv("r-reticulate", required = TRUE)
 
 # Outline
 
-To compare annual average temperature records from Portugal against corresponding world annual average temperature records between 1750 and 2013,  we take the following steps:
+To compare annual average temperature records from Portugal against corresponding world annual average temperature records between 1750 and 2013, we take the following steps:
 
-1. Download regional and global temperature trends from [http://berkeleyearth.lbl.gov/](http://berkeleyearth.lbl.gov) using the command line (see `Bash` script in annex);
+1. Download regional and global temperature trends from [http://berkeleyearth.lbl.gov](http://berkeleyearth.lbl.gov) using the command line (see `Bash` script in annex);
 
 2. Load, prepare, and visualize the trends using `Python` (see script in annex):  
   2.1. Open, clean the CSV table with [`pandas`](https://github.com/pandas-dev/pandas);  
