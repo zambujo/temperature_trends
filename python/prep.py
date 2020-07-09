@@ -3,16 +3,16 @@ import pandas as pd
 from plotnine import *
 
 # load data files 
-reference_pt = pd.read_csv("../data/portugal_monthly_avg.csv", \
+reference_pt = pd.read_csv('../data/portugal_monthly_avg.csv', \
                            header = None, \
                            names = ['reference'])
-temperature_pt = pd.read_csv("../data/portugal_monthly_anom.csv", \
+temperature_pt = pd.read_csv('../data/portugal_monthly_anom.csv', \
                              header = None, \
                              names = ['year', 'month', 'delta'])
-reference_world = pd.read_csv("../data/world_monthly_avg.csv", \
+reference_world = pd.read_csv('../data/world_monthly_avg.csv', \
                               header = None, \
                               names = ['reference'])
-temperature_world = pd.read_csv("../data/world_monthly_anom.csv", \
+temperature_world = pd.read_csv('../data/world_monthly_anom.csv', \
                   header = None, \
                   names = ['year', 'month', 'delta'])
 
@@ -32,12 +32,12 @@ def calculate_temperatures(ref_temp, delta_temp, loc):
         # average annual temperature
         temp = temp.groupby('year').mean()[['absolute']]
         temp['year'] = temp.index
-        assert temp.year.duplicated().sum() == 0, "remove duplicate years"
+        assert temp.year.duplicated().sum() == 0, 'remove duplicate years'
         temp['location'] = np.repeat(loc, len(temp))
         return temp
 
-temperature_pt = calculate_temperatures(reference_pt, temperature_pt, "Portugal")
-temperature_world = calculate_temperatures(reference_world, temperature_world, "World")
+temperature_pt = calculate_temperatures(reference_pt, temperature_pt, 'Portugal')
+temperature_world = calculate_temperatures(reference_world, temperature_world, 'World')
 
 # --- combine data frames
 
@@ -48,7 +48,7 @@ temperatures = temperatures.dropna()
 
 p = ggplot(temperatures, aes(x = 'year', y = 'absolute', color = 'location')) \
   + geom_point(alpha = .4, size = 2) \
-  + geom_smooth(method = "mavg", method_args = {'window': 10},  se = False) \
+  + geom_smooth(method = 'mavg', method_args = {'window': 10},  se = False) \
   + labs(x = 'Year', y = 'Average Temperature') \
   + theme_minimal() \
   + theme(legend_position = (0.75, 0.25))

@@ -353,16 +353,16 @@ import pandas as pd
 from plotnine import *
 
 # load data files 
-reference_pt = pd.read_csv(&quot;../data/portugal_monthly_avg.csv&quot;, \
+reference_pt = pd.read_csv(&#39;../data/portugal_monthly_avg.csv&#39;, \
                            header = None, \
                            names = [&#39;reference&#39;])
-temperature_pt = pd.read_csv(&quot;../data/portugal_monthly_anom.csv&quot;, \
+temperature_pt = pd.read_csv(&#39;../data/portugal_monthly_anom.csv&#39;, \
                              header = None, \
                              names = [&#39;year&#39;, &#39;month&#39;, &#39;delta&#39;])
-reference_world = pd.read_csv(&quot;../data/world_monthly_avg.csv&quot;, \
+reference_world = pd.read_csv(&#39;../data/world_monthly_avg.csv&#39;, \
                               header = None, \
                               names = [&#39;reference&#39;])
-temperature_world = pd.read_csv(&quot;../data/world_monthly_anom.csv&quot;, \
+temperature_world = pd.read_csv(&#39;../data/world_monthly_anom.csv&#39;, \
                   header = None, \
                   names = [&#39;year&#39;, &#39;month&#39;, &#39;delta&#39;])
 
@@ -382,12 +382,12 @@ def calculate_temperatures(ref_temp, delta_temp, loc):
         # average annual temperature
         temp = temp.groupby(&#39;year&#39;).mean()[[&#39;absolute&#39;]]
         temp[&#39;year&#39;] = temp.index
-        assert temp.year.duplicated().sum() == 0, &quot;remove duplicate years&quot;
+        assert temp.year.duplicated().sum() == 0, &#39;remove duplicate years&#39;
         temp[&#39;location&#39;] = np.repeat(loc, len(temp))
         return temp
 
-temperature_pt = calculate_temperatures(reference_pt, temperature_pt, &quot;Portugal&quot;)
-temperature_world = calculate_temperatures(reference_world, temperature_world, &quot;World&quot;)
+temperature_pt = calculate_temperatures(reference_pt, temperature_pt, &#39;Portugal&#39;)
+temperature_world = calculate_temperatures(reference_world, temperature_world, &#39;World&#39;)
 
 # --- combine data frames
 
@@ -398,7 +398,7 @@ temperatures = temperatures.dropna()
 
 p = ggplot(temperatures, aes(x = &#39;year&#39;, y = &#39;absolute&#39;, color = &#39;location&#39;)) \
   + geom_point(alpha = .4, size = 2) \
-  + geom_smooth(method = &quot;mavg&quot;, method_args = {&#39;window&#39;: 10},  se = False) \
+  + geom_smooth(method = &#39;mavg&#39;, method_args = {&#39;window&#39;: 10},  se = False) \
   + labs(x = &#39;Year&#39;, y = &#39;Average Temperature&#39;) \
   + theme_minimal() \
   + theme(legend_position = (0.75, 0.25))</code></pre>
