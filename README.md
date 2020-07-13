@@ -1,10 +1,24 @@
-# Exploring Weather Data with Bash and Python (and R)
 
-## Outline
+# `weather_trends`: Exploring Weather Data with Bash and Python (and R)
 
-Comparing regional and global temperature trends embedding Python on R Markdown.  Using [`plotnine`](https://github.com/has2k1/plotnine) and [`reticulate`](https://github.com/rstudio/reticulate).
+<!-- badges: start -->
+
+<!-- badges: end -->
+
+`weather_trends` compares Portugal’s vs world temperature trends.
+`weather_trends` is a *pet project* testing how to run Python in
+[`{rmarkdown}`](https://github.com/rstudio/rmarkdown).
+
+## Dependencies
+
+  - [`plotnine`](https://github.com/has2k1/plotnine)
+  - [`{reticulate}`](https://github.com/rstudio/reticulate)
 
 ## Data
 
-[Berkeley Earth](http://berkeleyearth.org/data): [Wikipedia article](https://en.wikipedia.org/wiki/Berkeley_Earth).
+  - [Berkeley Earth](http://berkeleyearth.org/data): [Wikipedia
+    article](https://en.wikipedia.org/wiki/Berkeley_Earth)
 
+## License
+
+`weather_trends` is released under the [MIT License](./LICENSE.md).
