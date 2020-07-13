@@ -14,7 +14,7 @@ knitr::opts_chunk$set(
 <!-- badges: start -->
 <!-- badges: end -->
 
-`weather_trends` compares Portugal's vs world temperature trends.  `weather_trends` is a _pet project_ testing how to run Python in [`{rmarkdown}`](https://github.com/rstudio/rmarkdown).
+`weather_trends` compares Portugal/World temperature trends.  `weather_trends` is a _pet project_ testing how to run Python in [`{rmarkdown}`](https://github.com/rstudio/rmarkdown).
 
 ## Dependencies
 

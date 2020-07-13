@@ -5,7 +5,7 @@
 
 <!-- badges: end -->
 
-`weather_trends` compares Portugal’s vs world temperature trends.
+`weather_trends` compares Portugal/World temperature trends.
 `weather_trends` is a *pet project* testing how to run Python in
 [`{rmarkdown}`](https://github.com/rstudio/rmarkdown).
 
