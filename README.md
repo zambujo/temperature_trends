@@ -5,8 +5,8 @@
 
 <!-- badges: end -->
 
-temperature_trends is a *pet project* testing how to run Python in
-[`{rmarkdown}`](https://github.com/rstudio/rmarkdown), comparing Portugal vs World temperature trends.
+temperature_trends is a demo project showing how to embed Python in
+[`{rmarkdown}`](https://github.com/rstudio/rmarkdown).  We compare Portugal vs global temperature trends.
 
 ## Dependencies
 
