@@ -1,13 +1,12 @@
 
-# `weather_trends`: Exploring Weather Data with Bash and Python (and R)
+# Exploring Temperature Data with Bash and Python (and R)
 
 <!-- badges: start -->
 
 <!-- badges: end -->
 
-`weather_trends` compares Portugal/World temperature trends.
-`weather_trends` is a *pet project* testing how to run Python in
-[`{rmarkdown}`](https://github.com/rstudio/rmarkdown).
+temperature_trends is a *pet project* testing how to run Python in
+[`{rmarkdown}`](https://github.com/rstudio/rmarkdown), comparing Portugal vs World temperature trends.
 
 ## Dependencies
 
@@ -21,4 +20,4 @@
 
 ## License
 
-`weather_trends` is released under the [MIT License](./LICENSE.md).
+temperature_trends is released under the [MIT License](./LICENSE.md).
