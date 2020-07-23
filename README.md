@@ -6,7 +6,7 @@
 <!-- badges: end -->
 
 temperature_trends is a demo project showing how to embed Python in
-[`{rmarkdown}`](https://github.com/rstudio/rmarkdown).  We compare Portugal vs global temperature trends.
+[`{rmarkdown}`](https://github.com/rstudio/rmarkdown).  We inspect historical temperature records for Portugal and worldwide.
 
 ## Dependencies
 
