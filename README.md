@@ -1,5 +1,5 @@
 
-# Exploring Temperature Data with Bash and Python (and R)
+# Exploring Temperature Data with Bash and Python
 
 <!-- badges: start -->
 
